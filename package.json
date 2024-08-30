@@ -1,0 +1,20 @@
+{
+  "name": "rest-api-yakumars",
+  "version": "1.0.0",
+  "description": "Rest API project YakuMars 2024",
+  "main": "index.js",
+  "scripts": {
+    "test": "test d"
+  },
+  "repository": {
+    "type": "git",
+    "url": "REST-API-YakuMars"
+  },
+  "author": "YakuMars",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongodb": "^6.8.0"
+  }
+}
