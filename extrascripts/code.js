@@ -25,51 +25,45 @@ const limites = {
   ConcentracionGas: { min: 0.0, max: 500.0 },
 };
 
-// Procesos de tratamiento agrupados
+// Procesos de tratamiento agrupados (ahora serán true o false)
 const procesosTratamiento = {
-  //Sofia dice: Podemos simplificar todo esto
-  //Es mas facil tratar aguas negras  por separado en donde realizamos un proceso donde eliminamos los males y no necesariamente un muestreo
-  //Una entrada de aguas negras para desinfectarla
-  //Santiago dice: Proceso de tratamiento: orinas, heces, aguas grises (agua jabonosa), este es un proceso de reciclaje/potabilizacion es mas sencillo que las aguas negras
-  //Tenemos pensado en pasar aguas grieses a procesos purificados y aguas negras a un pretratamiento para unirlas con las aguas negras y hacer el purificacion y juntarlos
-  //Un solo proceso paso a paso, solo de aguas grises y aguas negras
-  //Si logramos eliminar las bacterias en las aguas negras, se puede mezclar con las aguas grises y hacer un solo tratamiento, luego tomar muestras y sacar conclusiones (si esta pura o necesita volver a pasar a purificar)
-
-  Turbidez: "Filtración (arena, carbón activado, filtros de membrana)",
-  pH: "Ajuste del pH mediante adición de ácidos o bases",
-  ColiformesTotales: "Desinfección (cloración, ozonización, luz ultravioleta)", //Toma en cuenta todo quimico que entre
-  //Santi dice: desifeccion por ultravioleta
-
-  Conductividad: "Desionización o ablandamiento",
-  O2: "Aireación",
-  MetalesPesados:
-    "Precipitación química, adsorción con carbón activado, filtración con resinas especiales",
-  NitratosNitritos:
-    "Desnitrificación biológica, filtración con resinas selectivas",
-  PesticidasHerbicidasVOC: "Adsorción con carbón activado, oxidación avanzada",
-  Radioactividad: "Intercambio iónico, filtración con resinas especiales",
-  PM10PM2_5: "Filtración con filtros de partículas",
-  ConcentracionGas: "Ventilación o adsorción en carbón activado",
-  //TDS: "Desionización o ablandamiento", //Medir si llega un solido a este punto, puede detectar si entra algun solido en la muestra
-  //Mencionar sobre temperatura por si llegase a afectar la muestra
+  Turbidez: false,
+  pH: false,
+  ColiformesTotales: false,
+  Conductividad: false,
+  O2: false,
+  MetalesPesados: {
+    Plomo: false,
+    Arsénico: false,
+    Mercurio: false,
+  },
+  NitratosNitritos: false,
+  PesticidasHerbicidasVOC: false,
+  Radioactividad: {
+    Uranio: false,
+    Radio: false,
+  },
+  PM10PM2_5: false,
+  ConcentracionGas: false,
 };
 
 // Función para asignar procesos de tratamiento
 function asignarTratamientos(datos) {
-  const tratamientos = {};
+  const tratamientos = JSON.parse(JSON.stringify(procesosTratamiento)); // Clonar el objeto
 
   for (const parametro in datos) {
     if (limites[parametro]) {
-      if (Array.isArray(datos[parametro])) {
+      if (
+        typeof datos[parametro] === "object" &&
+        !Array.isArray(datos[parametro])
+      ) {
         // Validar y asignar tratamiento para metales pesados, radioactividad, etc.
         for (const subParametro in datos[parametro]) {
           if (
             datos[parametro][subParametro] >
             limites[parametro][subParametro].max
           ) {
-            tratamientos[subParametro] =
-              procesosTratamiento["MetalesPesados"] ||
-              procesosTratamiento["Radioactividad"];
+            tratamientos[parametro][subParametro] = true;
           }
         }
       } else {
@@ -79,18 +73,16 @@ function asignarTratamientos(datos) {
           datos[parametro] > limites[parametro].max
         ) {
           if (parametro === "Nitratos" || parametro === "Nitritos") {
-            tratamientos["NitratosNitritos"] =
-              procesosTratamiento["NitratosNitritos"];
+            tratamientos["NitratosNitritos"] = true;
           } else if (
             parametro === "PesticidasHerbicidas" ||
             parametro === "VOC"
           ) {
-            tratamientos["PesticidasHerbicidasVOC"] =
-              procesosTratamiento["PesticidasHerbicidasVOC"];
+            tratamientos["PesticidasHerbicidasVOC"] = true;
           } else if (parametro === "PM10" || parametro === "PM2_5") {
-            tratamientos["PM10PM2_5"] = procesosTratamiento["PM10PM2_5"];
+            tratamientos["PM10PM2_5"] = true;
           } else {
-            tratamientos[parametro] = procesosTratamiento[parametro];
+            tratamientos[parametro] = true;
           }
         }
       }
